@@ -1,32 +1,42 @@
 <?php
+
 require_once "./config.php";
-session_start()
-if(isset($_POST['submit'])){
-    $username=$_POST['username'];
-    $password=$_POST['password'];
 
-    $select="SELECT * FROM users WHERE username='$username'";
+session_start();
 
-    $result=mysqli_query($link,$select);
-
-    $row=mysqli_fetch_assoc($result);
-
-    if(mysqli_num_rows($result)>0){
-        if(password_verify($password,$row['password'])){
-            $_SESSION['logged_in']=true;
-            $_SESSION['username']=$row['username'];
-            header('location:index.php');
-        }else{
-            echo  "<script>
-    alert('password is incorrect')
-</script>";
-        }
-    }
-
+if(!empty($_SESSION['id'])){
+    header('Location: index.php');
 }
 
-?>
+if(isset($_POST['submit'])){
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    $select = "SELECT * FROM users WHERE username = '$username'";
     
+    $result = mysqli_query($link,$select);
+
+    $row = mysqli_fetch_assoc($result);
+
+    if(mysqli_num_rows($result) > 0){ 
+
+        if(password_verify($password,$row['password'])){
+            $_SESSION['logged_in'] = true;
+            $_SESSION['id'] = $row['id'];
+            $_SESSION['username'] = $row['username'];
+            header('Location:index.php');
+        } else {
+            echo "<script>
+                alert('password is incorrect')
+                </script>";
+        }
+    } else {
+        echo "<script>
+                alert('this user is not registered')
+                </script>";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,28 +67,28 @@ if(isset($_POST['submit'])){
                 <i class="bi bi-bag-check brand-icon"></i>
                 <h2 class="fw-bold mt-2">Sign In</h2>
             </div>
-            <form action="" method="post">
+            <form action ="" method = "post">
                 <div class="mb-3">
                     <label for="loginEmail" class="form-label">Email or Username</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-person"></i></span>
-                        <input type="text" class="form-control" id="loginEmail" placeholder="Enter email or username" required>
+                        <input type="text" class="form-control" id="loginEmail" placeholder="Enter email or username" name = "username" required>
                     </div>
                 </div>
                 <div class="mb-3">
                     <label for="loginPassword" class="form-label">Password</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                        <input type="password" class="form-control" id="loginPassword" placeholder="Password" required>
+                        <input type="password" class="form-control" id="loginPassword" placeholder="Password" name = "password" required>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-primary w-100 py-2 mt-2" name="submit">Login</button>
+                <button type="submit" name = "submit" class="btn btn-primary w-100 py-2 mt-2">Login</button>
             </form>
             <div class="mt-3 text-center">
-                <a href="register.html" class="text-decoration-none">Don't have an account? <span class="fw-semibold text-primary">Register</span></a>
+                <a href="registration.php" class="text-decoration-none">Don't have an account? <span class="fw-semibold text-primary">Register</span></a>
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <?php include "./includes/header.php" ?>
 </body>
 </html> 

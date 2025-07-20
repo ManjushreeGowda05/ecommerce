@@ -7,7 +7,7 @@
     <?php include "./includes/header.php" ?>
 </head>
 <body>
-   <?php include "./includes/navbar.php" ?>
+    <?php include "./includes/navbar.php" ?>
     <div class="container py-5">
         <h1 class="mb-4">Contact Us</h1>
         <form class="row g-3">
@@ -30,4 +30,4 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-</html>k
+</html> 

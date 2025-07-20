@@ -10,7 +10,18 @@
                     <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
                     <li class="nav-item"><a class="nav-link" href="contact.php">Contact</a></li>
                     <li class="nav-item"><a class="nav-link" href="add-product.php">add product</a></li>
-                    <li class="nav-item"><a class="nav-link" href="registration.php">add product</a></li>
+                    <li class="nav-item"><a class="nav-link" href="registration.php">registration</a></li>
+
+                    <?php  
+                    if(empty($_SESSION['id'])){
+                        echo '<li class="nav-item"><a class="nav-link" href="login.php"><i class="bi bi-person-circle"></i> Login</a></li>';
+                    }else{
+                        echo '<li class="nav-item"><a class="nav-link" href="login.php"><i class="bi bi-person-circle"></i> Login</a></li>';
+                    }
+                    
+                    
+                    
+                    ?>
                     <li class="nav-item"><a class="nav-link" href="login.php"><i class="bi bi-person-circle"></i> Login</a></li>
                 </ul>
             </div>
