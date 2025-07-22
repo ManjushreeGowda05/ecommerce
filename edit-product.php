@@ -2,45 +2,70 @@
 require_once "./config.php";
 session_start();
 
-if (isset($_GET['id'])) {
-    $product_id = $_GET['id'];
-    $select = "SELECT * FROM products WHERE id = $product_id";
-    $result = mysqli_query($link, $select);
-    $product = mysqli_fetch_array($result);
+if (!isset($_GET['id']) || !ctype_digit($_GET['id'])) {
+    header('Location: manage-product.php'); exit;
 }
+$product_id = intval($_GET['id']);
+$select = "SELECT * FROM products WHERE id = ?";
+$stmt = mysqli_prepare($link, $select);
+mysqli_stmt_bind_param($stmt, "i", $product_id);
+mysqli_stmt_execute($stmt);
+$product = mysqli_stmt_get_result($stmt)->fetch_assoc();
+mysqli_stmt_close($stmt);
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $id = $_POST['id'];
-    $name = $_POST['name'];
-    $description = $_POST['description'];
-    $price = $_POST['product_price'];
-    $category = $_POST['category'];
-    
-    // Handle image upload
-    $image_path = $product['image_path']; // Default to existing image
-    if (!empty($_FILES['image']['name'])) {
-        $target_dir = "uploads/";
-        $target_file = $target_dir . basename($_FILES["image"]["name"]);
-        if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-            $image_path = $target_file;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $id = intval($_POST['id']);
+        $name = trim($_POST['name']);
+        $description = trim($_POST['description']);
+        $price = floatval($_POST['product_price']);
+        $category = trim($_POST['category']);
+        $image_path = $product['image_path'];
+
+        if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            // Validate file
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = finfo_file($finfo, $_FILES['image']['tmp_name']);
+            finfo_close($finfo);
+
+            if (!in_array($mime, ['image/jpeg','image/png','image/gif'])) {
+                throw new Exception('Only JPEG, PNG, GIF allowed');
+            }
+            if ($_FILES['image']['size'] > 2*1024*1024) {
+                throw new Exception('File too large');
+            }
+
+            // Sanitize and store
+            $ext = preg_replace('/[^A-Za-z0-9]/','',pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
+            $newName = uniqid('', true) . ".$ext";
+            $uploadDir = __DIR__ . '/../secure_uploads/';
+            if (!is_dir($uploadDir)) mkdir($uploadDir, 0755);
+            $destination = $uploadDir . $newName;
+
+            if (!move_uploaded_file($_FILES['image']['tmp_name'], $destination)) {
+                throw new Exception('Upload error');
+            }
+            chmod($destination, 0644);
+            $image_path = 'uploads/' . $newName;
         }
-    }
-    
-    $update = "UPDATE products SET 
-               name = '$name', 
-               description = '$description', 
-               product_price = $price, 
-               category = '$category', 
-               image_path = '$image_path' 
-               WHERE id = $id";
-    if (mysqli_query($link, $update)) {
-        echo "<script>alert('Product updated successfully!'); window.location.href='manage-product.php';</script>";
-        exit();
-    } else {
-        echo "<script>alert('Error updating product');</script>";
+
+        // Prepare and execute update
+        $stmt = mysqli_prepare($link, "
+            UPDATE products SET
+              name=?, description=?, product_price=?, category=?, image_path=?
+            WHERE id=?");
+        mysqli_stmt_bind_param($stmt, "ssdssi", $name, $description, $price, $category, $image_path, $id);
+        if (!mysqli_stmt_execute($stmt)) throw new Exception('DB error');
+        mysqli_stmt_close($stmt);
+
+        echo "<script>alert('Product updated successfully!'); window.location='manage-product.php';</script>"; exit;
+
+    } catch (Exception $e) {
+        echo "<script>alert('**Error:** " . addslashes($e->getMessage()) . "');</script>";
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

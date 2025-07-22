@@ -59,7 +59,8 @@ session_start();
 
                                 if (mysqli_num_rows($result) > 0) {
 
-                                while ($row = mysqli_fetch_array($result)) {?>
+                                while ($row = mysqli_fetch_array($result)) {
+                                    $total ?>
                                 <tr>
                                     <td><img src="<?php echo $row['image_path']?>" class="img-thumbnail" style="height: 60px;" alt="Product 1"></td>
                                     <td><?php echo $row['name']?></td>
@@ -86,8 +87,8 @@ session_start();
                 <div class="cart-summary p-4 mb-4">
                     <h5 class="fw-bold mb-3">Order Summary</h5>
                     <div class="d-flex justify-content-between mb-2">
-                        <span>Subtotal</span>
-                        <span>$79.97</span>
+                        <span><?php echo $total_price</span>
+                        <span></span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Shipping</span>
